@@ -1,17 +1,82 @@
 import * as vscode from 'vscode';
 import { ItemsProvider, Item } from './itemsProvider';
+import { SecureStorage } from './utils/secureStorage';
+import { validatePAT, authenticateUser } from './github/auth';
+import { showAuthenticationDialog } from './ui/authenticationDialog';
 
-export function activate(context: vscode.ExtensionContext) {
-	console.log('TreeView Example extension is now active!');
+let secureStorage: SecureStorage;
+let isUserAuthenticated = false;
+
+export async function activate(context: vscode.ExtensionContext) {
+	console.log('Avro extension is now active!');
+
+	// Initialize secure storage
+	secureStorage = new SecureStorage(context);
+
+	// Check if user is already authenticated
+	const isAuthenticated = await secureStorage.isAuthenticated();
+	const storedUser = await secureStorage.getUser();
+	const storedOrg = await secureStorage.getOrganization();
+	const storedRole = await secureStorage.getRole();
+
+	if (isAuthenticated && storedUser) {
+		// Verify stored PAT is still valid
+		const pat = await secureStorage.getPAT();
+		if (pat) {
+			const result = await validatePAT(pat);
+			if (result.success) {
+				isUserAuthenticated = true;
+				console.log(`User ${storedUser} is already authenticated as ${storedRole}`);
+			} else {
+				// PAT is invalid, clear storage
+				await secureStorage.clearAll();
+				console.log('Stored PAT is invalid, cleared storage');
+			}
+		}
+	}
 
 	// Create the TreeView provider
 	const itemsProvider = new ItemsProvider();
+	
+	// Set initial authentication state with role
+	itemsProvider.setAuthenticationState(isUserAuthenticated, storedUser, storedRole as 'admin' | 'member' | undefined);
 
 	// Register the TreeView
 	vscode.window.createTreeView('itemsExplorer', {
 		treeDataProvider: itemsProvider,
 		showCollapseAll: true,
 	});
+
+	// Register authentication command
+	context.subscriptions.push(
+		vscode.commands.registerCommand('avro.authenticate', async () => {
+			// Show authentication dialog (quick input)
+			const result = await showAuthenticationDialog(secureStorage, storedOrg);
+
+			if (result.success && result.username) {
+				// Get the role from storage (it was stored during authenticateUser)
+				const role = await secureStorage.getRole();
+				
+				isUserAuthenticated = true;
+				vscode.window.showInformationMessage(
+					`✓ Successfully authenticated as ${result.username}${role ? ` (${role})` : ''}`
+				);
+				// Update ItemsProvider with authentication state and role
+				itemsProvider.setAuthenticationState(true, result.username, role as 'admin' | 'member' | undefined);
+			}
+		})
+	);
+
+	// Register logout command
+	context.subscriptions.push(
+		vscode.commands.registerCommand('avro.logout', async () => {
+			await secureStorage.clearAll();
+			isUserAuthenticated = false;
+			vscode.window.showInformationMessage('✓ Logged out successfully');
+			// Update ItemsProvider to show sign-in button
+			itemsProvider.setAuthenticationState(false);
+		})
+	);
 
 	// Register commands
 	context.subscriptions.push(
@@ -74,5 +139,5 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
-	console.log('TreeView Example extension is now deactivated!');
+	console.log('Avro extension is now deactivated!');
 }

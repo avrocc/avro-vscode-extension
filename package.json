@@ -1,8 +1,8 @@
 {
-  "name": "avro",
-  "displayName": "Avro",
+  "name": "avro-dev",
+  "displayName": "Avro Dev",
   "description": "Avro platform extension",
-  "version": "1.0.0",
+  "version": "0.0.2",
   "publisher": "avro",
   "license": "MIT",
   "repository": {
@@ -45,6 +45,10 @@
       {
         "command": "avro.showPanel",
         "key": "ctrl+shift+a"
+      },
+      {
+        "command": "avro.authenticate",
+        "key": "ctrl+shift+g"
       }
     ],
     "menus": {
@@ -75,16 +79,37 @@
           "command": "itemsExplorer.executeAction",
           "when": "viewItem == action",
           "group": "inline"
+        },
+        {
+          "command": "avro.logout",
+          "when": "viewItem == user-status",
+          "group": "navigation@1"
         }
       ],
       "commandPalette": [
         {
           "command": "avro.showPanel",
           "title": "Avro: Show Items Panel"
+        },
+        {
+          "command": "avro.authenticate",
+          "title": "Avro: Authenticate with GitHub"
+        },
+        {
+          "command": "avro.logout",
+          "title": "Avro: Logout"
         }
       ]
     },
     "commands": [
+      {
+        "command": "avro.authenticate",
+        "title": "Avro: Authenticate with GitHub"
+      },
+      {
+        "command": "avro.logout",
+        "title": "Avro: Logout"
+      },
       {
         "command": "itemsExplorer.refreshItems",
         "title": "Refresh Items",
@@ -116,6 +141,30 @@
         "icon": "$(extensions)"
       }
     ]
+  },
+  "configuration": {
+    "title": "Avro",
+    "properties": {
+      "avro.github.organization": {
+        "type": "string",
+        "default": "",
+        "description": "GitHub organization name for role-based access control"
+      },
+      "avro.github.requiredRoles": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": ["admin", "member"]
+        },
+        "default": ["member"],
+        "description": "Required GitHub organization roles for access (admin, member)"
+      },
+      "avro.authentication.enabled": {
+        "type": "boolean",
+        "default": true,
+        "description": "Enable GitHub authentication for this extension"
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
