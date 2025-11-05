@@ -1,0 +1,136 @@
+{
+  "name": "avro",
+  "displayName": "Avro",
+  "description": "Avro platform extension",
+  "version": "1.0.0",
+  "publisher": "avro",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/avrocc/avro-vscode-extension"
+  },
+  "icon": "media/avro-icon.png",
+  "keywords": ["avro", "treeview", "explorer"],
+  "main": "./dist/extension.js",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "avro-explorer",
+          "title": "Avro",
+          "icon": "media/avro-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "avro-explorer": [
+        {
+          "id": "itemsExplorer",
+          "name": "Avro Items Explorer",
+          "icon": "media/icon.svg",
+          "contextualTitle": "Items"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "avro.showPanel",
+        "key": "ctrl+shift+a"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "itemsExplorer.refreshItems",
+          "when": "view == itemsExplorer",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "itemsExplorer.openItem",
+          "when": "viewItem == file",
+          "group": "navigation@1"
+        },
+        {
+          "command": "itemsExplorer.editItem",
+          "when": "viewItem == file || viewItem == folder",
+          "group": "navigation@2"
+        },
+        {
+          "command": "itemsExplorer.deleteItem",
+          "when": "viewItem == file || viewItem == folder || viewItem == item",
+          "group": "navigation@3"
+        },
+        {
+          "command": "itemsExplorer.executeAction",
+          "when": "viewItem == action",
+          "group": "inline"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "avro.showPanel",
+          "title": "Avro: Show Items Panel"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "itemsExplorer.refreshItems",
+        "title": "Refresh Items",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "itemsExplorer.openItem",
+        "title": "Open Item",
+        "icon": "$(open)"
+      },
+      {
+        "command": "itemsExplorer.editItem",
+        "title": "Edit Item",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "itemsExplorer.deleteItem",
+        "title": "Delete Item",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "itemsExplorer.executeAction",
+        "title": "Execute",
+        "icon": "$(play)"
+      },
+      {
+        "command": "avro.showPanel",
+        "title": "Avro",
+        "icon": "$(extensions)"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.7",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^5.8.0",
+    "@typescript-eslint/parser": "^5.8.0",
+    "eslint": "^8.5.0",
+    "typescript": "^4.5.4"
+  }
+}
