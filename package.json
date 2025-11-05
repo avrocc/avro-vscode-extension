@@ -2,7 +2,7 @@
   "name": "avro-dev",
   "displayName": "Avro",
   "description": "Avro platform extension",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "publisher": "avro",
   "license": "MIT",
   "repository": {
