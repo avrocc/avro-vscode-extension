@@ -27,10 +27,14 @@ export async function activate(context: vscode.ExtensionContext) {
 			if (result.success) {
 				isUserAuthenticated = true;
 				console.log(`User ${storedUser} is already authenticated as ${storedRole}`);
+				vscode.window.showInformationMessage(
+					`✓ Avro: Authenticated as ${storedUser}${storedRole ? ` (${storedRole})` : ''}`
+				);
 			} else {
 				// PAT is invalid, clear storage
 				await secureStorage.clearAll();
 				console.log('Stored PAT is invalid, cleared storage');
+				vscode.window.showWarningMessage('✗ Avro: Stored authentication token is invalid. Please re-authenticate.');
 			}
 		}
 	}
@@ -58,11 +62,29 @@ export async function activate(context: vscode.ExtensionContext) {
 				const role = await secureStorage.getRole();
 				
 				isUserAuthenticated = true;
-				vscode.window.showInformationMessage(
-					`✓ Successfully authenticated as ${result.username}${role ? ` (${role})` : ''}`
-				);
+				const message = `✓ Successfully authenticated as ${result.username}${role ? ` (${role})` : ''}`;
+				vscode.window.showInformationMessage(message);
+				console.log(message);
 				// Update ItemsProvider with authentication state and role
 				itemsProvider.setAuthenticationState(true, result.username, role as 'admin' | 'member' | undefined);
+			} else if (result.error && result.error !== 'Cancelled') {
+				// Show error notification for failed authentication with details
+				const errorMessage = `✗ Avro: ${result.error}`;
+				const action = await vscode.window.showErrorMessage(
+					errorMessage,
+					'Retry',
+					'Troubleshoot',
+					'Dismiss'
+				);
+				
+				if (action === 'Retry') {
+					// Trigger authentication again
+					vscode.commands.executeCommand('avro.authenticate');
+				} else if (action === 'Troubleshoot') {
+					// Open GitHub token settings
+					vscode.env.openExternal(vscode.Uri.parse('https://github.com/settings/tokens'));
+				}
+				console.error(errorMessage);
 			}
 		})
 	);
@@ -70,9 +92,12 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Register logout command
 	context.subscriptions.push(
 		vscode.commands.registerCommand('avro.logout', async () => {
+			const username = await secureStorage.getUser();
 			await secureStorage.clearAll();
 			isUserAuthenticated = false;
-			vscode.window.showInformationMessage('✓ Logged out successfully');
+			const message = `✓ Avro: Logged out${username ? ` (${username})` : ''}`;
+			vscode.window.showInformationMessage(message);
+			console.log(message);
 			// Update ItemsProvider to show sign-in button
 			itemsProvider.setAuthenticationState(false);
 		})
