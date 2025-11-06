@@ -2,6 +2,35 @@
 
 All notable changes to the Avro VSCode Extension will be documented in this file.
 
+## [0.0.4] - 2025-11-06
+
+### Added
+- **Detailed Error Messages**: Context-specific error information for authentication failures
+  - 401/Unauthorized: Invalid PAT or missing scopes
+  - 403/Forbidden: Missing read:org scope or access denied
+  - 404/Not Found: Organization not found or inaccessible
+  - Network errors: Connection issues with helpful diagnostics
+- **Error Action Buttons**: Quick actions in error notifications
+  - Retry: Attempt authentication again
+  - Troubleshoot: Open GitHub token settings
+  - Dismiss: Close error message
+- **Auth State Notifications**: Visual feedback for all authentication operations
+  - Success: Shows username and role confirmation
+  - Error: Detailed error with troubleshooting hints
+  - Warning: Token validation failures on startup
+  - Logout: Confirms successful logout with username
+
+### Changed
+- Authentication error handling improved with specific error types
+- Startup validation now shows notification feedback
+- Logout message includes username for confirmation
+
+## [0.0.3] - 2025-11-06
+
+### Added
+- Extension renamed to `avro-dev` for marketplace publication
+- Marketplace URL: https://marketplace.visualstudio.com/items?itemName=avro.avro-dev
+
 ## [0.0.2] - 2025-11-06
 
 ### Added
